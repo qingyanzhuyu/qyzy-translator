@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QYZY·translator</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <span class="brand"><img class="mark" src="../icons/icon32.png" alt="" /> QYZY·translator</span>
+      <span class="bar-actions">
+        <button id="openOptions" class="icon" title="设置">⚙</button>
+      </span>
+    </header>
+
+    <main>
+      <div class="hero">
+        <img class="hero-avatar" src="../icons/avatar.png" alt="" />
+        <div class="hero-copy">
+          <strong>QYZY</strong>
+          <span>题面翻译模式</span>
+        </div>
+      </div>
+      <div class="field" id="providerField">
+        <label for="provider">服务商</label>
+        <select id="provider"></select>
+      </div>
+      <div class="field" id="modelField">
+        <label for="model">模型</label>
+        <select id="model"></select>
+      </div>
+      <div class="status" id="status">正在读取配置…</div>
+
+      <div class="actions">
+        <button id="translatePage" class="primary">翻译本页</button>
+        <button id="clearPage">清除译文</button>
+      </div>
+
+      <label class="toggle" id="qualityRow">
+        <input type="checkbox" id="qualityMode" />
+        <span>高质量模式（较慢、较贵）</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="showFloat" />
+        <span>显示右下角悬浮按钮</span>
+      </label>
+
+      <div class="hint">
+        <div><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> 翻译本页</div>
+        <div>选中文字 → 右上角出现「译」按钮</div>
+      </div>
+    </main>
+
+    <footer>
+      <span id="version">v0.1.0</span>
+      <a href="#" id="aboutLink">关于</a>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

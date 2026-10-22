@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QYZY·translator · 设置</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand"><img class="mark" src="../icons/icon32.png" alt="" /> QYZY·translator · 设置</div>
+      <nav class="tabs" role="tablist">
+        <button class="tab" data-tab="providers" role="tab">服务商</button>
+        <button class="tab active" data-tab="translation" role="tab">翻译</button>
+        <button class="tab" data-tab="about" role="tab">关于</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="panel" id="tab-providers">
+        <h1>服务商</h1>
+        <p class="hint">
+          每个服务商独立保存 API Key；翻译时只使用「当前」服务商。支持任何 OpenAI 兼容接口
+          （Base URL 到 <code>/v1</code> 为止）。
+        </p>
+        <div id="providers" class="providers"></div>
+        <button id="addProvider" class="ghost">+ 添加服务商</button>
+      </section>
+
+      <section class="panel active" id="tab-translation">
+        <h1>翻译</h1>
+        <div class="card">
+          <label class="row">
+            <span>翻译引擎</span>
+            <select id="engine">
+              <option value="api">API（服务商）</option>
+              <option value="web">DeepSeek 网页版（实验）</option>
+            </select>
+          </label>
+          <p class="hint">
+            网页版会复用已登录的 chat.deepseek.com：自动填入提示词并点击发送，再把回复回填到译文块；需要保持该标签页打开，且属于自动化操作，可能受网页改版或风控影响。
+          </p>
+          <label class="row">
+            <span>网页版每 N 次翻译后新开对话</span>
+            <input id="webMaxTurns" type="number" min="1" max="50" step="1" />
+          </label>
+          <label class="row">
+            <span>整页翻译的最短英文词数</span>
+            <input id="minWords" type="number" min="1" max="50" step="1" />
+          </label>
+          <p class="hint">低于该词数的段落不参与整页翻译，避免把按钮和导航翻乱；划选翻译不受限制。</p>
+          <label class="row">
+            <span>显示右下角「译」悬浮按钮</span>
+            <input id="showFloat" type="checkbox" />
+          </label>
+          <label class="row">
+            <span>悬停预取（鼠标停留即提前翻译）</span>
+            <input id="hoverPrefetch" type="checkbox" />
+          </label>
+          <label class="row">
+            <span>使用翻译缓存</span>
+            <input id="cacheEnabled" type="checkbox" />
+          </label>
+          <label class="row">
+            <span>预取停留时长（毫秒）</span>
+            <input id="prefetchDelay" type="number" min="150" max="1500" step="50" />
+          </label>
+          <p class="hint">
+            预取只在没有正在进行的翻译时触发，每页最多 40 次；它会在你点击前消耗少量额度，不需要可关闭。
+          </p>
+          <label class="row">
+            <span>使用术语表</span>
+            <input id="glossaryEnabled" type="checkbox" />
+          </label>
+          <label class="col">
+            <span>术语表（每行「英文=中文」）</span>
+            <textarea id="glossary" rows="14" spellcheck="false"></textarea>
+          </label>
+          <p class="hint">术语表会随每次请求一起发送；留空则只依赖模型自身知识。</p>
+          <div class="row">
+            <span>翻译缓存 <em id="cacheSize" class="cache-size">—</em></span>
+            <button id="clearCache" class="ghost" type="button">清除缓存</button>
+          </div>
+          <p class="hint">缓存按「服务商 + 模型 + 原文」保存，命中时不再请求 API；清除后不影响其他设置。</p>
+        </div>
+
+        <div class="card manual">
+          <h2>使用说明</h2>
+
+          <h3>第一次使用</h3>
+          <ol>
+            <li><strong>选引擎</strong>：有 API Key 选「API」；想用网页版额度选「DeepSeek 网页版」。</li>
+            <li><strong>API 配置</strong>：到「服务商」填 Key → 测试连接 → 保存 → 设为当前。</li>
+            <li><strong>网页版配置</strong>：在浏览器登录 chat.deepseek.com，关掉「深度思考」，保持标签页打开；点「译」时若没开会自动打开。</li>
+            <li><strong>刷新一次目标网页</strong>，让内容脚本生效。</li>
+          </ol>
+
+          <h3>日常翻译</h3>
+          <ul>
+            <li>鼠标悬停段落 → 点右上角「译」：译文插在原文下方。</li>
+            <li>选中文字 → 点选区右上角「译」：只翻译选中的部分。</li>
+            <li>整页翻译：右下角圆形按钮、弹窗「翻译本页」，或 <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd>。</li>
+            <li>译文块顶部可复制、重试、关闭；标题显示「模型 · 总耗时（首字 x.x s）」。</li>
+          </ul>
+
+          <h3>代码与公式</h3>
+          <p>代码、公式、行内代码会以 <code>[[C0]]</code> 占位符发送，返回后原样回填；网页版丢失占位符会直接报错，不会悄悄少代码。</p>
+
+          <h3>自定义外观</h3>
+          <ul>
+            <li><strong>设置页背景</strong>：替换 <code>assets/background.jpg</code>（建议 1600×900、深色低对比），然后在扩展页重新加载。</li>
+            <li><strong>头像 / 徽标 / 图标</strong>：分别替换 <code>icons/avatar.png</code>、<code>icons/hat.png</code>、<code>icons/icon16/32/48/128.png</code>。</li>
+            <li><strong>背景浓淡</strong>：编辑 <code>src/options.css</code> 里 <code>body::before</code> 的 <code>opacity</code>，默认 0.09。</li>
+          </ul>
+
+          <h3>常见问题</h3>
+          <ul>
+            <li><strong>首字 20–40 秒</strong>：模型在深度思考，换非推理模型或尝试 <code>{"thinking_mode": false}</code>。</li>
+            <li><strong>401 / 403</strong>：Key 无效；<strong>429</strong>：触发限流，等一分钟。</li>
+            <li><strong>网页版“找不到输入框”</strong>：未登录或未打开 chat.deepseek.com。</li>
+            <li><strong>更新扩展后没效果</strong>：在扩展页重新加载，并刷新目标网页和 DeepSeek 标签页。</li>
+          </ul>
+
+          <p class="manual-foot">完整说明与常见问题见项目根目录的 README.md。</p>
+        </div>
+      </section>
+
+      <section class="panel" id="tab-about">
+        <h1>关于</h1>
+        <div class="card about">
+          <div class="about-hero">
+            <img src="../icons/avatar.png" alt="" />
+            <div>
+              <strong>QYZY·translator</strong>
+              <p>轻量浏览器翻译扩展</p>
+            </div>
+          </div>
+          <div class="about-row"><span>名称</span><strong>QYZY·translator</strong></div>
+          <div class="about-row"><span>版本</span><strong id="aboutVersion">—</strong></div>
+          <div class="about-row"><span>作者</span><strong>qyzy</strong></div>
+          <div class="about-row"><span>图标 / 背景</span><strong>原创生成</strong></div>
+          <div class="about-row"><span>快捷键</span><strong>Alt + Shift + T（翻译本页）</strong></div>
+          <div class="about-row"><span>数据</span><strong>仅保存在本机浏览器</strong></div>
+        </div>
+        <p class="hint">
+          翻译时会把当前段落或选中文本发送到你配置的服务商；页面内容不会在未点击的情况下自动上传。
+          代码、公式、行内代码以占位符保护，返回后原样回填。
+        </p>
+        <p class="hint">
+          本扩展为个人工具，与 HoYoverse / 米哈游、DeepSeek 均无关联；图标与背景均为原创生成，不使用第三方角色素材。
+        </p>
+        <p class="hint">清除扩展数据：在 Edge 的扩展管理页移除并重新加载即可；API Key 也会一并清除。</p>
+      </section>
+    </main>
+
+    <footer class="bottom">
+      <button id="save" class="primary">保存设置</button>
+      <span id="saveStatus" class="status"></span>
+    </footer>
+
+    <script src="options.js"></script>
+  </body>
+</html>

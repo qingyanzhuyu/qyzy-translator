@@ -1,0 +1,299 @@
+:root {
+  --qt-bg: #fbfdff;
+  --qt-bg-soft: #eaf2fb;
+  --qt-fg: #16233c;
+  --qt-muted: #5d7393;
+  --qt-border: rgba(22, 35, 60, 0.14);
+  --qt-accent: #2f6fc4;
+  --qt-accent-soft: rgba(47, 111, 196, 0.1);
+  --qt-gold: #c9a86a;
+  --qt-gold-soft: rgba(201, 168, 106, 0.16);
+  --qt-cyan: #68c6e6;
+  --qt-code-bg: rgba(47, 111, 196, 0.08);
+  --qt-code-border: rgba(47, 111, 196, 0.16);
+  --qt-shadow: 0 8px 28px rgba(16, 34, 64, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --qt-bg: #111c2f;
+    --qt-bg-soft: #182640;
+    --qt-fg: #e9f2ff;
+    --qt-muted: #9db2cf;
+    --qt-border: rgba(180, 210, 255, 0.16);
+    --qt-accent: #7fc8ff;
+    --qt-accent-soft: rgba(127, 200, 255, 0.12);
+    --qt-gold: #e3c07f;
+    --qt-gold-soft: rgba(227, 192, 127, 0.16);
+    --qt-cyan: #8be3f0;
+    --qt-code-bg: rgba(127, 200, 255, 0.12);
+    --qt-code-border: rgba(127, 200, 255, 0.2);
+    --qt-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.qt-panel,
+.qt-hover-btn,
+.qt-sel-btn,
+.qt-float,
+.qt-toast {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  box-sizing: border-box;
+  color: var(--qt-fg);
+}
+
+.qt-panel *,
+.qt-hover-btn,
+.qt-sel-btn,
+.qt-float,
+.qt-toast {
+  box-sizing: border-box;
+}
+
+/* 段落旁/划选旁的翻译按钮 */
+.qt-hover-btn,
+.qt-sel-btn {
+  position: absolute;
+  z-index: 2147483000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid var(--qt-gold);
+  border-radius: 8px;
+  background: var(--qt-bg);
+  color: var(--qt-accent);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(16, 34, 64, 0.22);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 0.14s ease, transform 0.14s ease, background 0.14s ease;
+}
+
+.qt-hover-btn.qt-show,
+.qt-sel-btn.qt-show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.qt-hover-btn:hover,
+.qt-sel-btn:hover {
+  background: var(--qt-gold-soft);
+  border-color: var(--qt-gold);
+}
+
+/* 右下角整页翻译按钮 */
+.qt-float {
+  position: fixed;
+  right: 20px;
+  bottom: 22px;
+  z-index: 2147483000;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(227, 192, 127, 0.65);
+  border-radius: 50%;
+  background: linear-gradient(150deg, #1b2b4d 0%, #2f5b96 60%, #3f7fbf 100%);
+  color: #f3e6c4;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(16, 34, 64, 0.32), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  opacity: 0.9;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.qt-float:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.qt-float[data-busy="1"] {
+  min-width: 44px;
+  width: auto;
+  padding: 0 12px;
+  border-radius: 22px;
+  color: #16233c;
+  background: linear-gradient(150deg, #e3c07f, #f0d9a8);
+}
+
+/* 译文块 */
+.qt-panel {
+  display: block;
+  margin: 8px 0 14px;
+  padding: 0;
+  border: 1px solid var(--qt-border);
+  border-left: 3px solid var(--qt-gold);
+  border-radius: 10px;
+  background: var(--qt-bg);
+  color: var(--qt-fg);
+  box-shadow: 0 2px 12px rgba(16, 34, 64, 0.08);
+  font-size: 14px;
+  line-height: 1.78;
+  overflow: hidden;
+}
+
+.qt-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 10px;
+  border-bottom: 1px solid var(--qt-border);
+  background: linear-gradient(90deg, var(--qt-bg-soft), var(--qt-bg));
+  font-size: 12px;
+  color: var(--qt-muted);
+}
+
+.qt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: url('../icons/hat.png') center / contain no-repeat;
+  color: transparent;
+  font-size: 0;
+}
+
+.qt-model {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+
+.qt-actions {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.qt-actions button {
+  padding: 2px 7px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--qt-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.qt-actions button:hover {
+  background: var(--qt-gold-soft);
+  color: var(--qt-fg);
+}
+
+.qt-body {
+  padding: 10px 12px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.qt-panel[data-state="loading"] .qt-body {
+  color: var(--qt-muted);
+  font-size: 12px;
+}
+
+.qt-panel[data-state="error"] .qt-body {
+  color: #d14343;
+  font-size: 12px;
+}
+
+.qt-p {
+  margin: 0 0 8px;
+}
+
+.qt-p:last-child {
+  margin-bottom: 0;
+}
+
+.qt-li {
+  position: relative;
+  margin: 0 0 6px;
+  padding-left: 16px;
+}
+
+.qt-li::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  color: var(--qt-gold);
+}
+
+.qt-h {
+  margin: 2px 0 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--qt-fg);
+  letter-spacing: 0.2px;
+}
+
+.qt-code {
+  padding: 1px 5px;
+  border: 1px solid var(--qt-code-border);
+  border-radius: 4px;
+  background: var(--qt-code-bg);
+  color: var(--qt-fg);
+  font-family: "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
+  font-size: 0.92em;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.qt-pre {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--qt-code-border);
+  border-radius: 6px;
+  background: var(--qt-code-bg);
+  overflow-x: auto;
+}
+
+.qt-pre code {
+  font-family: "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
+  font-size: 0.9em;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.qt-warn {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border: 1px solid rgba(201, 168, 106, 0.55);
+  border-radius: 6px;
+  background: rgba(201, 168, 106, 0.12);
+  color: var(--qt-gold);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.qt-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  z-index: 2147483001;
+  padding: 8px 16px;
+  border: 1px solid rgba(227, 192, 127, 0.4);
+  border-radius: 9px;
+  background: linear-gradient(135deg, #16233c, #26456f);
+  color: #f3e6c4;
+  font-size: 13px;
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.qt-toast.qt-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
