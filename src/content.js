@@ -339,6 +339,14 @@
     }
   }
 
+  function stripReasoningText(text) {
+    return String(text || '')
+      .replace(/<thought>[\s\S]*?<\/thought>/gi, '')
+      .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+      .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
+      .trim();
+  }
+
   function finishPanel(requestId, state, error, meta) {
     const record = pending.get(requestId);
     if (!record) return;
@@ -351,8 +359,9 @@
     panel.dataset.state = state;
     const body = panel.querySelector('.qt-body');
     if (state === 'done') {
-      renderBody(body, record.raw.trim(), payload.tokens);
-      panel.__copyText = record.raw.trim();
+      const finalText = stripReasoningText(record.raw).trim();
+      renderBody(body, finalText, payload.tokens);
+      panel.__copyText = finalText;
       applyMeta(panel, meta);
       if (meta?.warning) {
         const warn = document.createElement('div');

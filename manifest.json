@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "QYZY·translator",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "description": "面向竞赛编程题面的网页翻译：段落按钮、划选翻译、整页翻译，代码与公式原样保留。",
   "permissions": ["storage", "activeTab", "scripting", "contextMenus", "tabs"],
   "host_permissions": ["<all_urls>"],

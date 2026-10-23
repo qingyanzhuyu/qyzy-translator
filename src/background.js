@@ -338,6 +338,15 @@ function extractContent(parsed) {
   return '';
 }
 
+function stripReasoning(text) {
+  return String(text || '')
+    .replace(/<thought>[\s\S]*?<\/thought>/gi, '')
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+    .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
+    .replace(/<\|\s*thinking\s*\|>[\s\S]*?<\|\s*\/\s*thinking\s*\|>/gi, '')
+    .trim();
+}
+
 async function streamChat(provider, model, messages, { signal, onDelta, maxTokens }) {
   const endpoint = String(provider.baseUrl || '').replace(/\/+$/, '') + '/chat/completions';
   const headers = { 'Content-Type': 'application/json' };
@@ -453,9 +462,25 @@ async function prefetchText(text) {
 
 async function handleTranslate(message, sender) {
   const settings = await getSettings();
-  const provider = activeProvider(settings);
+  let provider = activeProvider(settings);
   let model = settings.activeModel;
+  if (!provider) {
+    sendToTab(sender?.tab?.id, {
+      type: 'tr-error',
+      requestId: String(message.requestId || ''),
+      error: '尚未配置服务商',
+    });
+    return { ok: false };
+  }
   if (!model || !provider.models.includes(model)) model = provider.defaultModel;
+  // 当前服务商没填 Key 时，自动改用另一个已配置 Key 的服务商，避免“页面能开但永远报没 Key”。
+  if (!provider.apiKey && !/localhost|127\.0\.0\.1/.test(provider.baseUrl || '')) {
+    const fallback = settings.providers.find((item) => item.apiKey && item.baseUrl);
+    if (fallback) {
+      provider = fallback;
+      model = fallback.defaultModel || fallback.models[0] || '';
+    }
+  }
   const text = String(message.text || '');
   const requestId = String(message.requestId || '');
   const tabId = sender?.tab?.id;
@@ -464,7 +489,11 @@ async function handleTranslate(message, sender) {
     return { ok: false };
   }
   if (!provider.apiKey && !/localhost|127\.0\.0\.1/.test(provider.baseUrl)) {
-    sendToTab(tabId, { type: 'tr-error', requestId, error: '尚未填写 API Key' });
+    sendToTab(tabId, {
+      type: 'tr-error',
+      requestId,
+      error: `尚未填写 API Key（当前服务商：${provider.name}；引擎：API）`,
+    });
     return { ok: false };
   }
   const key = cacheKey(provider.id, model, text);
@@ -511,7 +540,7 @@ async function handleTranslate(message, sender) {
         await new Promise((resolve) => setTimeout(resolve, 1600));
       }
     }
-    const result = (full || streamed).trim();
+    const result = stripReasoning(full || streamed).trim();
     if (!result) {
       sendToTab(tabId, {
         type: 'tr-error',
@@ -818,7 +847,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (record) {
       clearTimeout(record.timer);
       state.web.delete(message.webId);
-      const text = String(message.text || '');
+      const text = stripReasoning(String(message.text || ''));
       const missing = (record.expected || []).filter((token) => !text.includes(token));
       const warning = missing.length
         ? `代码占位符缺失：${missing.slice(0, 4).join(', ')}，相关代码可能没有回填，建议重试`
