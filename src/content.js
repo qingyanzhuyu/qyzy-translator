@@ -65,16 +65,47 @@
     return tokens;
   }
 
+  const BLOCK_TAGS = new Set([
+    'P', 'DIV', 'LI', 'UL', 'OL', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+    'BLOCKQUOTE', 'TR', 'TD', 'TH', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER',
+    'TABLE', 'DD', 'DT', 'PRE', 'FIGURE', 'FIGCAPTION',
+  ]);
+
+  function textWithBreaks(root) {
+    const parts = [];
+    const walk = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        parts.push((node.nodeValue || '').replace(/\s+/g, ' '));
+        return;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      const tag = node.tagName;
+      if (tag === 'BR') {
+        parts.push('\n');
+        return;
+      }
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') return;
+      const isBlock = BLOCK_TAGS.has(tag);
+      if (isBlock) parts.push('\n');
+      for (const child of node.childNodes) walk(child);
+      if (isBlock) parts.push('\n');
+    };
+    walk(root);
+    return parts
+      .join('')
+      .replace(/\u00a0/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/^\s+|\s+$/g, '');
+  }
+
   function extractText(block, tokens) {
     const clone = block.cloneNode(true);
     for (const own of clone.querySelectorAll(OWN_UI)) own.remove();
     for (const junk of clone.querySelectorAll('script, style, noscript')) junk.remove();
     protect(clone, tokens);
-    return (clone.textContent || '')
-      .replace(/\u00a0/g, ' ')
-      .replace(/[ \t]+\n/g, '\n')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
+    return textWithBreaks(clone);
   }
 
   function blockPayload(block) {
@@ -90,7 +121,7 @@
     container.appendChild(range.cloneContents());
     for (const own of container.querySelectorAll(OWN_UI)) own.remove();
     const tokens = protect(container);
-    const text = (container.textContent || '').replace(/\u00a0/g, ' ').trim();
+    const text = textWithBreaks(container);
     if (!text) return null;
     const rect = range.getBoundingClientRect();
     const rects = [...range.getClientRects()];

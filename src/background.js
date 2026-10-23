@@ -586,7 +586,7 @@ async function handleTranslate(message, sender) {
 }
 
 function buildWebPrompt(settings, text) {
-  return `把下面文本翻译成简体中文；保留 [[C0]] 占位符与 LaTeX 公式（$...$、\\[...\\]）原样；只输出译文。\n\n${text}`;
+  return `把下面文本翻译成简体中文；保留换行、[[C0]] 占位符与 LaTeX 公式（$...$、\\[...\\]）原样；只输出译文。\n\n${text}`;
 }
 
 async function ensureDeepSeekTab() {
