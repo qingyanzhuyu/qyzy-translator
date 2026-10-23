@@ -214,6 +214,7 @@
   }
 
   function syncPanelWidth(panel) {
+    if (panel.dataset.fixedWidth === '1') return;
     const anchor = panel.__block;
     if (!anchor || !anchor.isConnected || anchor === document.body) return;
     const parent = anchor.parentElement;
@@ -225,6 +226,18 @@
     panel.style.width = `${Math.round(anchorRect.width)}px`;
     panel.style.maxWidth = '100%';
     panel.style.marginLeft = `${Math.max(0, Math.round(left))}px`;
+  }
+
+  function applySelectionLayout(panel, rect) {
+    const parent = panel.parentElement;
+    if (!parent) return;
+    const parentRect = parent.getBoundingClientRect();
+    const width = Math.max(220, Math.min(rect.width, parent.clientWidth));
+    const left = rect.left - parentRect.left - parent.clientLeft;
+    panel.style.width = `${Math.round(width)}px`;
+    panel.style.maxWidth = '100%';
+    panel.style.marginLeft = `${Math.max(0, Math.round(left))}px`;
+    panel.dataset.fixedWidth = '1';
   }
 
   function createPanel(anchor, model) {
@@ -620,6 +633,7 @@
       translatePayload({ text: info.text, tokens: info.tokens }, anchor);
       const panel = panelByBlock.get(anchor);
       if (panel) {
+        applySelectionLayout(panel, info.rect);
         setTimeout(() => panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 60);
       }
     });
