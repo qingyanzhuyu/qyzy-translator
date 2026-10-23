@@ -23,6 +23,7 @@
   let hoverBlock = null;
   let hoverTimer = 0;
   let prefetchTimer = 0;
+  let panelResizeTimer = 0;
   let prefetchCount = 0;
   let selectionInfo = null;
   let abortPage = false;
@@ -92,6 +93,8 @@
     const text = (container.textContent || '').replace(/\u00a0/g, ' ').trim();
     if (!text) return null;
     const rect = range.getBoundingClientRect();
+    const rects = [...range.getClientRects()];
+    const endRect = rects.length > 0 ? rects[rects.length - 1] : rect;
     const endNode = range.endContainer;
     const endElement = endNode.nodeType === Node.ELEMENT_NODE ? endNode : endNode.parentElement;
     let anchor = endElement ? endElement.closest(BLOCK_SELECTOR) : null;
@@ -100,7 +103,7 @@
       endRange.collapse(false);
       anchor = nearestBlock(endRange.getBoundingClientRect());
     }
-    return { text, tokens, rect, anchor };
+    return { text, tokens, rect, endRect, anchor };
   }
 
   function appendInline(container, text, tokens) {
@@ -210,6 +213,20 @@
     node.__timer = setTimeout(() => node.classList.remove('qt-show'), 2600);
   }
 
+  function syncPanelWidth(panel) {
+    const anchor = panel.__block;
+    if (!anchor || !anchor.isConnected || anchor === document.body) return;
+    const parent = anchor.parentElement;
+    if (!parent) return;
+    const anchorRect = anchor.getBoundingClientRect();
+    if (anchorRect.width <= 0) return;
+    const parentRect = parent.getBoundingClientRect();
+    const left = anchorRect.left - parentRect.left - parent.clientLeft;
+    panel.style.width = `${Math.round(anchorRect.width)}px`;
+    panel.style.maxWidth = '100%';
+    panel.style.marginLeft = `${Math.max(0, Math.round(left))}px`;
+  }
+
   function createPanel(anchor, model) {
     const panel = document.createElement('div');
     panel.className = 'qt-panel';
@@ -286,6 +303,7 @@
     panel.__block = anchor;
     panel.__anchor = anchor;
     panel.__payload = payload;
+    syncPanelWidth(panel);
     return panel;
   }
 
@@ -611,11 +629,14 @@
 
   function showSelectionButton(info) {
     const button = selectionButton();
-    const top = Math.max(4, info.rect.top + window.scrollY - 34);
-    const left = Math.min(
-      window.scrollX + document.documentElement.clientWidth - 36,
-      info.rect.right + window.scrollX + 4,
-    );
+    const base = info.endRect || info.rect;
+    const scrollY = window.scrollY;
+    const scrollX = window.scrollX;
+    const minTop = scrollY + 8;
+    const maxTop = scrollY + window.innerHeight - 46;
+    const top = Math.min(maxTop, Math.max(minTop, base.bottom + scrollY - 36));
+    const maxLeft = scrollX + document.documentElement.clientWidth - 36;
+    const left = Math.max(scrollX + 4, Math.min(maxLeft, base.right + scrollX + 4));
     button.style.top = `${top}px`;
     button.style.left = `${left}px`;
     button.classList.add('qt-show');
@@ -801,6 +822,17 @@
   });
 
   window.addEventListener('scroll', hideHoverButton, { passive: true });
+
+  window.addEventListener(
+    'resize',
+    () => {
+      clearTimeout(panelResizeTimer);
+      panelResizeTimer = setTimeout(() => {
+        for (const panel of document.querySelectorAll('.qt-panel')) syncPanelWidth(panel);
+      }, 120);
+    },
+    { passive: true },
+  );
 
   chrome.runtime.onMessage.addListener((message) => {
     const type = message?.type;
